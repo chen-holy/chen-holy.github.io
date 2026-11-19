@@ -33,7 +33,7 @@ def page(path, title, content, active="", description=None):
 <link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script></head>
 <body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="/">{e(config['title'])}<span> / 博客</span></a>
 <nav aria-label="主导航">{''.join(f'<a href="{href}" '+ ('aria-current="page"' if active == key else '') + f'>{label}</a>' for key,href,label in [('home','/','文章'),('tags','/tags/','标签'),('about','/about/','关于')])}</nav></header>
-<main id="main">{content}</main><footer><span>© {datetime.date.today().year} {e(config['title'])}</span><span>文字有迹，思考有声。 <a href="https://github.com/{e(config['repo'])}">GitHub</a></span></footer></body></html>'''
+<main id="main">{content}</main><footer><span>© {datetime.date.today().year} {e(config['title'])}</span><span> 岁岁平安 <a href="https://github.com/{e(config['repo'])}">GitHub</a></span></footer></body></html>'''
     target = OUT / unquote(path).lstrip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(document, encoding="utf-8")
@@ -73,9 +73,9 @@ shutil.copytree(ROOT / 'assets', OUT / 'assets')
 def cards(items):
     return '<div class="post-list">' + ''.join(f'''<article class="post-card"><time datetime="{p['date']}">{p['date'].replace('-', '.')}</time><div><h2><a href="/posts/{p['slug']}/">{e(p['title'])}</a></h2><p>{e(p['summary'])}</p>{tags_html(p['tags'])}</div></article>''' for p in items) + '</div>'
 
-page('/', '文章', f'''<section class="hero"><p class="eyebrow">CHEN HOLY / PERSONAL JOURNAL</p><h1>把思考写下来。<br><span>让成长有迹可循。</span></h1><p>{e(config['subtitle'])}</p><a class="text-link" href="/about/">认识一下我</a></section><section><div class="section-title"><h2>最近的文字</h2><span>{len(posts):02d} 篇文章</span></div>{cards(posts) if posts else '<p>第一篇文章，正在酝酿中。</p>'}</section>''', 'home')
+page('/', '文章', f'''<section class="hero"><p class="eyebrow">CHEN HOLY / PERSONAL JOURNAL</p><h1>天行健 <br><span>君子以自强不息 </span></h1><p>{e(config['subtitle'])}</p><a class="text-link" href="/about/">认识一下我</a></section><section><div class="section-title"><h2>最近的文字</h2><span>{len(posts):02d} 篇文章</span></div>{cards(posts) if posts else '<p>第一篇文章，正在酝酿中。</p>'}</section>''', 'home')
 all_tags = sorted({t for p in posts for t in p['tags']})
-page('/tags/', '标签', '<div class="page-intro"><p class="eyebrow">EXPLORE BY TOPIC</p><h1>循着兴趣，继续阅读。</h1><p>每一个标签，都是一条探索的线索。</p></div><div class="tag-grid">' + ''.join(f'<a href="{tag_url(t)}"><strong>{e(t)}</strong><span>{sum(t in p["tags"] for p in posts)} 篇文章</span></a>' for t in all_tags) + '</div>', 'tags')
+page('/tags/', '标签', '<div class="page-intro"><p class="eyebrow">EXPLORE BY TOPIC</p><h1>怕什么真理无穷, </h1><p>进一步有进一步的欢喜! </p></div><div class="tag-grid">' + ''.join(f'<a href="{tag_url(t)}"><strong>{e(t)}</strong><span>{sum(t in p["tags"] for p in posts)} 篇文章</span></a>' for t in all_tags) + '</div>', 'tags')
 for tag in all_tags:
     page(tag_url(tag), tag, f'<div class="page-intro"><a class="text-link" href="/tags/">全部标签</a><h1>{e(tag)}</h1><p>关于这个主题的文字</p></div>' + cards([p for p in posts if tag in p['tags']]), 'tags')
 about, toc = render((ROOT / 'content/about.md').read_text(encoding='utf-8'))
