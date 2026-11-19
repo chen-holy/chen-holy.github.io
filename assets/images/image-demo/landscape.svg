@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640" role="img" aria-labelledby="title desc">
+<title id="title">山间日出</title><desc id="desc">浅绿色天空中，一轮太阳从层叠的山峦后升起，前景是一片湖水。</desc>
+<rect width="1200" height="640" fill="#eaf2ec"/>
+<circle cx="880" cy="170" r="70" fill="#e8bf78"/>
+<path d="M0 430 240 150 470 425 690 220 970 430 1200 230V640H0Z" fill="#a9c4b0"/>
+<path d="M0 490 310 310 550 500 870 300 1200 490V640H0Z" fill="#5d8977"/>
+<path d="M0 520Q300 470 600 530T1200 510V640H0Z" fill="#bad7cf"/>
+<path d="M730 570H1000M780 595H1050M130 560H340" stroke="#edf6f0" stroke-width="5" stroke-linecap="round"/>
+</svg>
