@@ -136,8 +136,9 @@ listing('/', '文章', posts, f'''<section class="hero"><p class="eyebrow">CHEN 
 all_tags = sorted({t for p in posts for t in p['tags']})
 page('/tags/', '标签', '<div class="page-intro"><p class="eyebrow">EXPLORE BY TOPIC</p><h1>吾生也有涯</h1><p>so, 进一步有进一步的欢喜! </p></div><div class="tag-grid">' + ''.join(f'<a href="{tag_url(t)}"><strong>{e(t)}</strong><span>{sum(t in p["tags"] for p in posts)} 篇文章</span></a>' for t in all_tags) + '</div>', 'tags')
 for tag in all_tags:
-    listing(tag_url(tag), tag, [p for p in posts if tag in p['tags']], f'<div class="page-intro"><a class="text-link" href="/tags/">全部标签</a><h1>{e(tag)}</h1><p>关于这个主题的文字</p></div>', 'tags')
-
+    listing(tag_url(tag), tag, [p for p in posts if tag in p['tags']], f'<div class="page-intro"><a class="text-link" href="/tags/">全部标签</a><h1>{e(tag)}</h1></div>', 'tags')
+    # listing(tag_url(tag), tag, [p for p in posts if tag in p['tags']], f'<div class="page-intro"><a class="text-link" href="/tags/">全部标签</a><h1>{e(tag)}</h1><p>关于这个主题的文字</p></div>', 'tags')
+    
 # Date archives include published posts only, grouped by the article date.
 years = sorted({p['date'][:4] for p in posts}, reverse=True)
 archive_intro = '<div class="page-intro"><p class="eyebrow">ARCHIVES</p><h1>按年月归档</h1><p>沿着时间，翻阅过去的记录。</p></div>'
