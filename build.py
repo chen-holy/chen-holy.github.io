@@ -46,6 +46,12 @@ for source in (ROOT / 'content/posts').glob('*.md'):
     if len(parts) != 3 or parts[0].strip():
         raise ValueError(f'Missing JSON front matter: {source}')
     data = json.loads(parts[1])
+    if not isinstance(data, dict):
+        raise ValueError(f'Front matter must be a JSON object: {source}')
+    if 'draft' in data and type(data['draft']) is not bool:
+        raise ValueError(f'draft must be true or false (without quotes): {source}')
+    if data.get('draft', False):
+        continue
     for key in ['title', 'date', 'tags', 'summary']:
         if key not in data:
             raise ValueError(f'Missing {key}: {source}')
