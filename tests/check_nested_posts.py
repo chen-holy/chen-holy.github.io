@@ -1,4 +1,4 @@
-"""Verify recursive discovery, stable URLs, and duplicate slug protection."""
+"""Verify recursive discovery, stable URLs, and automatic unique slugs."""
 import json
 import shutil
 import subprocess
@@ -45,11 +45,29 @@ with tempfile.TemporaryDirectory() as directory:
     write(duplicate, draft=True)
     build()
     write(duplicate)
-    result = build(ok=False)
-    assert 'Duplicate article filename' in result.stderr
-    assert 'other/root-post.md' in result.stderr and 'different/root-post.md' in result.stderr
-    # Failed duplicate validation preserves the previous valid output.
-    assert (out / 'posts/root-post/index.html').read_text(encoding='utf-8') == before
+    result = build()
+    assert 'Duplicate filename:' in result.stdout
+    assert (out / 'posts/root-post-2/index.html').exists()
+    assert (out / 'posts/root-post/index.html').exists()
+    # Existing numbered filenames are reserved before assigning generated suffixes.
+    write(content / 'root-post-2.md')
+    write(content / 'third/root-post.md')
+    write(content / 'fourth/root-post.md')
+    build()
+    for slug in ['root-post', 'root-post-2', 'root-post-3', 'root-post-4', 'root-post-5']:
+        assert (out / 'posts' / slug / 'index.html').exists()
+    reserved = (out / 'posts/root-post-2/index.html').read_text(encoding='utf-8')
+    assert '<title>root-post-2' in reserved
+    snapshot = {p.relative_to(out): p.read_bytes() for p in out.rglob('*.html')}
+    build()
+    assert snapshot == {p.relative_to(out): p.read_bytes() for p in out.rglob('*.html')}
+    # Further collisions with numbered bases also get unique destinations.
+    write(content / 'extra/root-post-2.md')
+    build()
+    assert (out / 'posts/root-post-2-2/index.html').exists()
+    for path in [content / 'root-post-2.md', content / 'third/root-post.md',
+                 content / 'fourth/root-post.md', content / 'extra/root-post-2.md']:
+        path.unlink()
     duplicate.unlink()
     build()
     (root / 'tests').mkdir()

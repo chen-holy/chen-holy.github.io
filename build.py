@@ -39,7 +39,6 @@ def page(path, title, content, active="", description=None):
     target.write_text(document, encoding="utf-8")
 
 posts = []
-slug_sources = {}
 for source in sorted((ROOT / 'content/posts').rglob('*.md')):
     if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', source.stem):
         raise ValueError(f'Use a lowercase ASCII slug: {source.name}')
@@ -53,11 +52,6 @@ for source in sorted((ROOT / 'content/posts').rglob('*.md')):
         raise ValueError(f'draft must be true or false (without quotes): {source}')
     if data.get('draft', False):
         continue
-    if source.stem in slug_sources:
-        first = slug_sources[source.stem].relative_to(ROOT)
-        second = source.relative_to(ROOT)
-        raise ValueError(f'Duplicate article filename: {first} and {second}; use unique filenames to keep /posts/{source.stem}/ unambiguous')
-    slug_sources[source.stem] = source
     for key in ['title', 'date', 'tags', 'summary']:
         if key not in data:
             raise ValueError(f'Missing {key}: {source}')
@@ -66,8 +60,26 @@ for source in sorted((ROOT / 'content/posts').rglob('*.md')):
         raise ValueError(f'Invalid tags: {source}')
     data['tags'] = list(dict.fromkeys(data['tags']))
     data['slug'] = source.stem
+    data['_source'] = source.relative_to(ROOT).as_posix()
     data['body'], data['toc'] = render(parts[2])
     posts.append(data)
+# Reserve real filenames before allocating suffixes so foo-2.md is never overwritten.
+reserved_slugs = {post['slug'] for post in posts}
+used_slugs = set()
+for post in posts:
+    base = post['slug']
+    candidate = base
+    number = 2
+    while candidate in used_slugs:
+        candidate = f'{base}-{number}'
+        number += 1
+        while candidate in reserved_slugs:
+            candidate = f'{base}-{number}'
+            number += 1
+    post['slug'] = candidate
+    used_slugs.add(candidate)
+    if candidate != base:
+        print(f"Duplicate filename: {post['_source']} -> /posts/{candidate}/")
 posts.sort(key=lambda p: (p['date'], p['slug']), reverse=True)
 # Rebuild output so removed posts and tags disappear.
 if OUT.exists():
