@@ -39,7 +39,8 @@ def page(path, title, content, active="", description=None):
     target.write_text(document, encoding="utf-8")
 
 posts = []
-for source in (ROOT / 'content/posts').glob('*.md'):
+slug_sources = {}
+for source in sorted((ROOT / 'content/posts').rglob('*.md')):
     if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', source.stem):
         raise ValueError(f'Use a lowercase ASCII slug: {source.name}')
     parts = source.read_text(encoding='utf-8').split('---', 2)
@@ -52,6 +53,11 @@ for source in (ROOT / 'content/posts').glob('*.md'):
         raise ValueError(f'draft must be true or false (without quotes): {source}')
     if data.get('draft', False):
         continue
+    if source.stem in slug_sources:
+        first = slug_sources[source.stem].relative_to(ROOT)
+        second = source.relative_to(ROOT)
+        raise ValueError(f'Duplicate article filename: {first} and {second}; use unique filenames to keep /posts/{source.stem}/ unambiguous')
+    slug_sources[source.stem] = source
     for key in ['title', 'date', 'tags', 'summary']:
         if key not in data:
             raise ValueError(f'Missing {key}: {source}')

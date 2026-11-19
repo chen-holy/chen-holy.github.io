@@ -139,3 +139,30 @@ GitHub 官方教程：
 - 每页数量由 `build.py` 中的 `PAGE_SIZE = 9` 控制。
 
 执行 `python3 tests/check_pagination.py` 可在临时目录生成多篇测试文章，验证分页边界、年月分组和草稿排除；不会向线上发布测试文章。
+
+
+## 10. 用子文件夹整理文章
+
+`content/posts/` 支持任意层级的子文件夹，构建时递归读取其中所有 `.md` 文件，例如：
+
+```text
+content/posts/
+├── 技术/
+│   ├── Python/
+│   │   └── python-notes.md
+│   └── docker-notes.md
+├── 2026/
+│   └── november-notes.md
+└── hello-world.md
+```
+
+文件夹名称可以使用中文、空格；文章文件名仍使用小写英文字母、数字、连字符。
+文章 URL 只取文件名，例如 `技术/Python/python-notes.md` 的网址仍为 `/posts/python-notes/`。
+因此在文件夹之间移动文章不会改变链接，也不会影响按路径关联的评论。
+
+所有已发布文章的文件名必须全局唯一；不同目录中的同名文章会明确报错，避免页面被覆盖。草稿仍不参与发布，正式发布前需要确认文件名唯一。
+
+文件夹仅用于整理源码，不自动变成标签或归档。页面分类仍由文章 JSON 的 `tags` 和 `date` 决定；分页会统一收集所有子目录中的已发布文章。
+图片仍存放在 `assets/images/`，继续使用 `/assets/images/...` 引用；不要把图片放在 `content/posts/` 里，因为该目录只读取 Markdown，不复制附件。
+
+测试：`python3 tests/check_nested_posts.py` 验证多级目录、移动后 URL 保持不变、草稿、分页和同名冲突。
