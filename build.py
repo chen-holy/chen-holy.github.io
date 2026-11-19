@@ -16,6 +16,7 @@ e = lambda value: html.escape(str(value), quote=True)
 def render(source):
     md = markdown.Markdown(extensions=["fenced_code", "tables", "toc", "sane_lists"], extension_configs={"toc": {"permalink": False}})
     body = md.convert(source)
+    body = body.replace('<pre>', '<pre translate="no" class="notranslate">').replace('<code class="', '<code translate="no" class="notranslate ').replace('<code>', '<code translate="no" class="notranslate">')
     return body, md.toc
 
 def tag_url(tag):
@@ -26,13 +27,19 @@ def tags_html(tags):
 
 def page(path, title, content, active="", description=None):
     url = config['url'].rstrip('/') + path
+    translation_url = 'https://translate.google.com/translate?sl=auto&tl=en&hl=en&u=' + quote(url, safe='')
     document = f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} · {e(config['title'])}</title><meta name="description" content="{e(description or config['description'])}">
 <link rel="canonical" href="{e(url)}"><link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script></head>
 <body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="/">{e(config['title'])}<span> / 博客</span></a>
-<nav aria-label="主导航">{''.join(f'<a href="{href}" '+ ('aria-current="page"' if active == key else '') + f'>{label}</a>' for key,href,label in [('home','/','文章'),('tags','/tags/','标签'),('archives','/archives/','归档'),('quotes','/quotes/','摘句'),('about','/about/','关于')])}</nav></header>
+<nav aria-label="主导航">{''.join(f'<a href="{href}" '+ ('aria-current="page"' if active == key else '') + f'>{label}</a>' for key,href,label in [('home','/','文章'),('tags','/tags/','标签'),('archives','/archives/','归档'),('quotes','/quotes/','摘句'),('about','/about/','关于')])}</nav>
+<div class="language-switch notranslate" translate="no" role="group" aria-label="Language / 语言">
+<a class="language-original" href="{e(url)}" lang="zh-CN" aria-label="中文原文" aria-current="true">中文</a>
+<span aria-hidden="true">/</span>
+<a class="language-english" href="{e(translation_url)}" target="_blank" rel="noopener noreferrer" lang="en" title="Automatically translate this page into English with Google Translate (opens a new tab)" aria-label="English — automatic translation by Google, opens a new tab">English</a>
+</div></header>
 <main id="main">{content}</main><footer><span>© {datetime.date.today().year} {e(config['title'])}</span><span> 岁岁平安 <a href="https://github.com/{e(config['repo'])}">GitHub</a></span></footer></body></html>'''
     target = OUT / unquote(path).lstrip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
