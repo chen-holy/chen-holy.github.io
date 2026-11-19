@@ -32,11 +32,20 @@ def page(path, title, content, active="", description=None):
 <link rel="canonical" href="{e(url)}"><link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script></head>
 <body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="/">{e(config['title'])}<span> / 博客</span></a>
-<nav aria-label="主导航">{''.join(f'<a href="{href}" '+ ('aria-current="page"' if active == key else '') + f'>{label}</a>' for key,href,label in [('home','/','文章'),('tags','/tags/','标签'),('archives','/archives/','归档'),('about','/about/','关于')])}</nav></header>
+<nav aria-label="主导航">{''.join(f'<a href="{href}" '+ ('aria-current="page"' if active == key else '') + f'>{label}</a>' for key,href,label in [('home','/','文章'),('tags','/tags/','标签'),('archives','/archives/','归档'),('quotes','/quotes/','摘句'),('about','/about/','关于')])}</nav></header>
 <main id="main">{content}</main><footer><span>© {datetime.date.today().year} {e(config['title'])}</span><span> 岁岁平安 <a href="https://github.com/{e(config['repo'])}">GitHub</a></span></footer></body></html>'''
     target = OUT / unquote(path).lstrip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(document, encoding="utf-8")
+
+# Quotes are optional in minimal sites, but malformed entries fail clearly.
+quotes_path = ROOT / 'content/quotes.json'
+quotes = json.loads(quotes_path.read_text(encoding='utf-8')) if quotes_path.exists() else []
+if not isinstance(quotes, list):
+    raise ValueError('content/quotes.json must be a JSON array')
+for index, item in enumerate(quotes, 1):
+    if not isinstance(item, dict) or any(not isinstance(item.get(key), str) or not item[key].strip() for key in ('text', 'source')):
+        raise ValueError(f'Quote {index}: text and source must be non-empty strings')
 
 posts = []
 for source in sorted((ROOT / 'content/posts').rglob('*.md')):
@@ -155,6 +164,10 @@ for year in years:
     archive_body += '</div></section>'
     listing(f'/archives/{year}/', year + ' 年归档', year_posts, f'<div class="page-intro"><a class="text-link" href="/archives/">全部归档</a><h1>{year} 年</h1></div>', 'archives')
 page('/archives/', '年月归档', archive_intro + archive_body + ('<p>还没有已发布的文章。</p>' if not posts else ''), 'archives')
+
+quote_intro = '<div class="page-intro"><p class="eyebrow">WORDS TO KEEP</p><h1>摘句</h1><p>把喜欢的句子，留在这里。</p></div>'
+quote_items = ''.join('<figure class="quote-card"><blockquote>' + e(item['text']).replace('\n', '<br>') + '</blockquote><figcaption>' + e(item['source']) + '</figcaption></figure>' for item in quotes)
+page('/quotes/', '摘句', quote_intro + '<section class="quote-list" aria-label="句子收藏">' + (quote_items or '<p class="quotes-empty">还没有收藏的句子，留待下一次遇见。</p>') + '</section>', 'quotes', description='收藏喜欢的句子，记录文字与出处。')
 
 about, toc = render((ROOT / 'content/about.md').read_text(encoding='utf-8'))
 page('/about/', '关于我', '<div class="about-layout"><div class="avatar" aria-hidden="true">C.</div><article class="prose">' + about + '</article></div>', 'about')
