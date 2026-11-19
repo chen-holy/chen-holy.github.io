@@ -143,7 +143,7 @@ def listing(base, title, items, intro, active, home=False):
 listing('/', '文章', posts, f'''<section class="hero"><p class="eyebrow">CHEN HOLY / PERSONAL JOURNAL</p><h1>天行健 <br><span>君子以自强不息 </span></h1><p>{e(config['subtitle'])}</p></section>''', 'home', home=True)
 
 all_tags = sorted({t for p in posts for t in p['tags']})
-page('/tags/', '标签', '<div class="page-intro"><p class="eyebrow">EXPLORE BY TOPIC</p><h1>标签分类</h1><p>给散落的事物各安其名，按类归档</p></div><div class="tag-grid">' + ''.join(f'<a href="{tag_url(t)}"><strong>{e(t)}</strong><span>{sum(t in p["tags"] for p in posts)} 篇文章</span></a>' for t in all_tags) + '</div>', 'tags')
+page('/tags/', '标签', '<div class="page-intro"><p class="eyebrow">EXPLORE BY TOPIC</p><h1>标签分类</h1><p>给散落的事物各安其名，按类归档。</p></div><div class="tag-grid">' + ''.join(f'<a href="{tag_url(t)}"><strong>{e(t)}</strong><span>{sum(t in p["tags"] for p in posts)} 篇文章</span></a>' for t in all_tags) + '</div>', 'tags')
 for tag in all_tags:
     listing(tag_url(tag), tag, [p for p in posts if tag in p['tags']], f'<div class="page-intro"><a class="text-link" href="/tags/">全部标签</a><h1>{e(tag)}</h1></div>', 'tags')
     # listing(tag_url(tag), tag, [p for p in posts if tag in p['tags']], f'<div class="page-intro"><a class="text-link" href="/tags/">全部标签</a><h1>{e(tag)}</h1><p>关于这个主题的文字</p></div>', 'tags')
